@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complex Frames and Encryption</title>
+    <link rel="stylesheet" type="text/css" href="2.css">
+    <style>
+        /* Style for the NEXT button */
+        .myDiv {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        /* Style for the button */
+        .myDiv button {
+            display: block;
+            margin: auto;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+    
+</head>
+<body>
+    <div class="container">
+        <div class="top">
+            <h2>Selected Number of Complex Frames:</h2>
+            <p id="complexFrames">0</p>
+        </div>
+        <div class="main-container">
+            <div class="left">
+                <div class="decryption-window">
+                    <h2>Encryption Options</h2>
+                    <label for="encryptionKey">Enter the encryption key:</label><br>
+                    <input type="text" id="encryptionKey" name="encryptionKey"><br><br>
+
+                    <button class="button" onclick="performEncryption()">Encryption into the video</button>
+                </div>
+            </div>
+            <div class="right">
+                <div class="output-window">
+                    <h2>Output Window</h2>
+                    <video id="outputVideo" controls autoplay></video>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="myDiv"> <!-- Added class attribute to the div -->
+        <button onclick="goToPage2()">NEXT</button>
+    </div>
+    
+<script>
+    function goToPage2() {
+        // Navigate to page 2
+        window.location.href = '3.html';
+    }
+</script>
+
+    <script>
+        // Declare global variables to store data
+        var videoPath;
+        var message;
+
+        window.onload = function() {
+            // Extract query parameters from the URL
+            var urlParams = new URLSearchParams(window.location.search);
+            videoPath = urlParams.get('videoPath');
+            message = urlParams.get('message');
+
+            // You can use videoPath and message here in your JavaScript
+            console.log("Video Path:", videoPath);
+            console.log("Message:", message);
+            console.log("Video Path:", videoPath);
+        };
+
+        function performEncryption() {
+            // Data to be sent to the Python backend
+            var dataToSend = {
+                videoPath: videoPath,
+                textMessage: message
+            };
+
+            // Make a POST request to the Python backend
+            fetch('http://localhost:5500/run_python_script', { // Replace 'http://localhost:5000' with the actual URL of your Flask server
+            method: 'POST',
+            headers: {
+           
+            },
+            body: JSON.stringify(dataToSend)
+             })
+
+            
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>

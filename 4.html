@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSNR and MSE Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input[type="file"] {
+            display: block;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PSNR and MSE Calculator</h1>
+        <label> select input video<input type="file" id="inputVideo" accept="video/*">
+        <label>
+          select Stego Video
+        </label>
+        <input type="file" id="stegoFile" accept="video/*">
+        <button onclick="calculatePSNR()">Calculate Average PSNR</button>
+        <button onclick="calculateMSE()">Calculate Average MSE</button>
+        <div class="result" id="psnrResult"></div>
+        <div class="result" id="mseResult"></div>
+    </div>
+
+    <script>
+        function calculatePSNR() {
+            var inputVideo = document.getElementById('inputVideo').files[0];
+            var stegoFile = document.getElementById('stegoFile').files[0];
+
+            if (!inputVideo || !stegoFile) {
+                alert("Please select both input video and stego file.");
+                return;
+            }
+
+            var reader1 = new FileReader();
+            reader1.onload = function(event1) {
+                var inputVideoData = event1.target.result;
+
+                var reader2 = new FileReader();
+                reader2.onload = function(event2) {
+                    var stegoFileData = event2.target.result;
+
+                    // Create video elements
+                    var inputVideoElement = document.createElement('video');
+                    inputVideoElement.src = inputVideoData;
+
+                    var stegoVideoElement = document.createElement('video');
+                    stegoVideoElement.src = stegoFileData;
+
+                    // Wait for the videos to load
+                    inputVideoElement.addEventListener('loadeddata', function() {
+                        stegoVideoElement.addEventListener('loadeddata', function() {
+                            // Calculate PSNR
+                            var psnr = calculateAveragePSNR(inputVideoElement, stegoVideoElement);
+                            document.getElementById('psnrResult').innerText = "PSNR Calculation Result: " + psnr.toFixed(2);
+                        });
+                    });
+                };
+                reader2.readAsDataURL(stegoFile);
+            };
+            reader1.readAsDataURL(inputVideo);
+        }
+
+        function calculateMSE() {
+            var inputVideo = document.getElementById('inputVideo').files[0];
+            var stegoFile = document.getElementById('stegoFile').files[0];
+
+            if (!inputVideo || !stegoFile) {
+                alert("Please select both input video and stego file.");
+                return;
+            }
+
+            var reader1 = new FileReader();
+            reader1.onload = function(event1) {
+                var inputVideoData = event1.target.result;
+
+                var reader2 = new FileReader();
+                reader2.onload = function(event2) {
+                    var stegoFileData = event2.target.result;
+
+                    // Create video elements
+                    var inputVideoElement = document.createElement('video');
+                    inputVideoElement.src = inputVideoData;
+
+                    var stegoVideoElement = document.createElement('video');
+                    stegoVideoElement.src = stegoFileData;
+
+                    // Wait for the videos to load
+                    inputVideoElement.addEventListener('loadeddata', function() {
+                        stegoVideoElement.addEventListener('loadeddata', function() {
+                            // Calculate MSE
+                            var mse = calculateAverageMSE(inputVideoElement, stegoVideoElement);
+                            document.getElementById('mseResult').innerText = "MSE Calculation Result: " + mse.toFixed(6);
+                        });
+                    });
+                };
+                reader2.readAsDataURL(stegoFile);
+            };
+            reader1.readAsDataURL(inputVideo);
+        }
+
+        function calculateAveragePSNR(video1, video2) {
+            var canvas1 = document.createElement('canvas');
+            var canvas2 = document.createElement('canvas');
+
+            var ctx1 = canvas1.getContext('2d');
+            var ctx2 = canvas2.getContext('2d');
+
+            var width = video1.videoWidth;
+            var height = video1.videoHeight;
+
+            canvas1.width = width;
+            canvas1.height = height;
+
+            canvas2.width = width;
+            canvas2.height = height;
+
+            ctx1.drawImage(video1, 0, 0, width, height);
+            ctx2.drawImage(video2, 0, 0, width, height);
+
+            var data1 = ctx1.getImageData(0, 0, width, height).data;
+            var data2 = ctx2.getImageData(0, 0, width, height).data;
+
+            var mse = 0;
+            for (var i = 0; i < data1.length; i += 4) {
+                var r1 = data1[i];
+                var g1 = data1[i + 1];
+                var b1 = data1[i + 2];
+
+                var r2 = data2[i];
+                var g2 = data2[i + 1];
+                var b2 = data2[i + 2];
+
+                mse += Math.pow(r1 - r2, 2) + Math.pow(g1 - g2, 2) + Math.pow(b1 - b2, 2);
+            }
+
+            mse /= (width * height * 3);
+            if (mse === 0) return Infinity;
+
+            var maxPixelValue = 255;
+            var psnr = 20 * Math.log10(maxPixelValue / Math.sqrt(mse));
+            return psnr;
+        }
+
+        function calculateAverageMSE(video1, video2) {
+            var canvas1 = document.createElement('canvas');
+            var canvas2 = document.createElement('canvas');
+
+            var ctx1 = canvas1.getContext('2d');
+            var ctx2 = canvas2.getContext('2d');
+
+            var width = video1.videoWidth;
+            var height = video1.videoHeight;
+
+            canvas1.width = width;
+            canvas1.height = height;
+
+            canvas2.width = width;
+            canvas2.height = height;
+
+            ctx1.drawImage(video1, 0, 0, width, height);
+            ctx2.drawImage(video2, 0, 0, width, height);
+
+            var data1 = ctx1.getImageData(0, 0, width, height).data;
+            var data2 = ctx2.getImageData(0, 0, width, height).data;
+
+            var mse = 0;
+            for (var i = 0; i < data1.length; i += 4) {
+                var r1 = data1[i];
+                var g1 = data1[i + 1];
+                var b1 = data1[i + 2];
+
+                var r2 = data2[i];
+                var g2 = data2[i + 1];
+                var b2 = data2[i + 2];
+
+                mse += Math.pow(r1 - r2, 2) + Math.pow(g1 - g2, 2) + Math.pow(b1 - b2, 2);
+            }
+
+            mse /= (width * height * 3);
+            return mse;
+        }
+    </script>
+</body>
+</html>

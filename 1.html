@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Steganography - Step 2</title>
+    <style type="text/css">
+        /* Styles for the entire page */
+        html, body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        /* Styles for the page container */
+        .page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+        }
+
+        /* Styles for the form container */
+        .container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Styles for headings */
+        h2 {
+            color: #1565c0; /* Blue color */
+            margin-bottom: 30px;
+        }
+
+        /* Styles for labels */
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        #key {
+            margin-bottom: 10px;
+        }
+
+        /* Styles for input fields */
+        input[type="file"], textarea, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .button {
+            font-size: 1.2em;
+            color: white;
+            background-color: #1565c0;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #0d47a1;
+        }
+
+        .button:focus {
+            outline: none;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        /* Style for the NEXT button container */
+        .myDiv {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        /* Style for the NEXT button */
+        .myDiv button {
+            display: block;
+            padding: 10px 20px;
+            background-color: #1565c0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        hr {
+            border: none;
+            height: 2px;
+            background-color: #1565c0; /* Blue color */
+            margin: 20px 0;
+        }
+
+        .result-heading {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .result-content {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #555;
+            padding: 5px;
+            margin-bottom: 20px;
+            display: inline-block;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="container">
+            <h2>Upload Video and Message</h2>
+            <form id="dataForm">
+                <label for="videoPath">Enter the path of the input video:</label>
+                <input type="file" id="videoPath" name="videoPath" accept="video/*">
+
+                <label for="message">Enter the message to be encrypted:</label>
+                <textarea id="message" name="message" rows="2" cols="50"></textarea>
+
+                <label for="key">Key:</label>
+                <input id="key" name="key" type="text">
+
+                <div class="button-group">
+                    <button class="button" type="button" id="b1">Encryption</button>
+                    <button class="button" type="button" id="b2">Decryption</button>
+                </div>
+
+                <hr>
+                <div class="result-heading">Encryption results:</div>
+                <span id="ecr" class="result-content"></span>
+                <br>
+                <hr>
+                <div class="result-heading">Decryption results:</div>
+                <span id="dcr" class="result-content"></span>
+                <br>
+            </form>
+        </div>
+    </div>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#b1").click(function () {
+                var files = $('#videoPath')[0].files[0];
+                var message = $("#message").val();
+                var key = $("#key").val();
+                var fd = new FormData();
+                fd.append('ifile', files);
+                fd.append('message', message);
+                fd.append('key', key);
+                $("#ecr").html("Please wait for embedding Results");
+                $.ajax({
+                    type: "POST",
+                    url: "/encrypt",
+                    data: fd,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        $("#ecr").html(data);
+                    }
+                });
+            });
+
+            $("#b2").click(function () {
+                var fd = new FormData();
+                var key = $("#key").val();
+                fd.append('key', key);
+                $("#dcr").html("Please wait for extracting Results");
+                $.ajax({
+                    type: "POST",
+                    url: "/decrypt",
+                    data: fd,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        $("#dcr").html(data);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
